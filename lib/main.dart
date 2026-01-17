@@ -4,7 +4,7 @@ import '../auth/signup.dart';
 import '../screens/home.dart';
 import '../screens/laporanfasilitas.dart';
 import '../screens/keluhanumum.dart';
-import '../screens/ajukan_ide_solusi.dart';
+import '../screens/ajukan_ide_solusi.dart';                           
 
 void main() {
   runApp(const FastalkApp());

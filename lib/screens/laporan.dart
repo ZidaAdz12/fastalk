@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_bottom_nav.dart';
 import 'detail_laporan.dart';
+import 'laporan_umum_detail.dart';
 import '../services/laporan_service.dart';
 
 class LaporanData {
@@ -418,14 +419,7 @@ class _LaporanPageState extends State<LaporanPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => DetailLaporanPage(
-                          title: title,
-                          subtitle: subtitle ?? 'Detail Laporan',
-                          description: description,
-                          image: imagePath,
-                          status: status,
-                          detailImages: detailImages ?? [imagePath],
-                        ),
+                        builder: (context) => LaporanUmumDetail(status: status),
                       ),
                     );
                   },
