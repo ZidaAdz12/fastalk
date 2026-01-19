@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 import '../services/laporan_service.dart';
 import 'detail_laporan.dart';
 
@@ -14,38 +15,87 @@ class LaporanUmumDetail extends StatefulWidget {
 class _LaporanUmumDetailState extends State<LaporanUmumDetail> {
   static const Color primaryBlue = Color(0xFF0F5E8C);
 
+  late LaporanService _laporanService;
+
+  @override
+  void initState() {
+    super.initState();
+    _laporanService = LaporanService();
+    print('DEBUG laporan_umum_detail: Status = ${widget.status}');
+    print('DEBUG laporan_umum_detail: Total laporan dari service = ${_laporanService.laporanBaru.length}');
+    
+    // Listen untuk perubahan di LaporanService
+    _laporanService.addListener(() {
+      print('DEBUG laporan_umum_detail: LaporanService berubah! Total sekarang = ${_laporanService.laporanBaru.length}');
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _laporanService.removeListener(() {});
+    super.dispose();
+  }
+
   // Fungsi untuk mendapatkan data laporan berdasarkan status
-  List<Map<String, String>> _getLaporanItems() {
+  List<Map<String, dynamic>> _getLaporanItems() {
+    List<Map<String, dynamic>> items = [];
+
+    print('DEBUG _getLaporanItems: Status = ${widget.status}');
+    print('DEBUG _getLaporanItems: Masuk ke kondisi Pending? ${widget.status == 'Pending'}');
+
+    // Jika status Pending, tambahkan laporan yang baru disubmit dari service
+    if (widget.status == 'Pending') {
+      print('DEBUG _getLaporanItems: Looping laporan dari service, jumlah = ${_laporanService.laporanBaru.length}');
+      // Tambahkan laporan dari LaporanService terlebih dahulu
+      for (var laporan in _laporanService.laporanBaru) {
+        print('DEBUG _getLaporanItems: Menambahkan laporan: ${laporan.jenisFasilitas}');
+        items.add({
+          'image': laporan.fotoPath ?? 'assets/foto_laporan.png',
+          'label': laporan.jenisFasilitas,
+          'isFromService': true,
+          'laporanData': laporan,
+        });
+      }
+      print('DEBUG _getLaporanItems: Setelah loop, items.length = ${items.length}');
+    }
+
+    // Tambahkan data default berdasarkan status
     switch (widget.status) {
       case 'Pending':
-        return [
-          {'image': 'assets/foto_laporan.png', 'label': 'Kursi kelas rusak'},
-          {'image': 'assets/foto_laporan.png', 'label': 'AC tidak berfungsi'},
-          {'image': 'assets/foto_laporan.png', 'label': 'Lampu mati'},
-          {'image': 'assets/foto_laporan.png', 'label': 'Toilet rusak'},
-          {'image': 'assets/foto_laporan.png', 'label': 'Papan tulis rusak'},
-          {'image': 'assets/foto_laporan.png', 'label': 'Pintu macet'},
-        ];
+        items.addAll([
+          {'image': 'assets/foto_laporan.png', 'label': 'Kursi kelas rusak', 'isFromService': false},
+          {'image': 'assets/foto_laporan.png', 'label': 'AC tidak berfungsi', 'isFromService': false},
+          {'image': 'assets/foto_laporan.png', 'label': 'Lampu mati', 'isFromService': false},
+          {'image': 'assets/foto_laporan.png', 'label': 'Toilet rusak', 'isFromService': false},
+          {'image': 'assets/foto_laporan.png', 'label': 'Papan tulis rusak', 'isFromService': false},
+          {'image': 'assets/foto_laporan.png', 'label': 'Pintu macet', 'isFromService': false},
+        ]);
+        break;
       case 'Rejected':
-        return [
-          {'image': 'assets/foto_laporan.png', 'label': 'Data tidak valid'},
-          {'image': 'assets/foto_laporan.png', 'label': 'Informasi kurang'},
-          {'image': 'assets/foto_laporan.png', 'label': 'Foto tidak jelas'},
-          {'image': 'assets/foto_laporan.png', 'label': 'Lokasi salah'},
-        ];
+        items.addAll([
+          {'image': 'assets/foto_laporan.png', 'label': 'Data tidak valid', 'isFromService': false},
+          {'image': 'assets/foto_laporan.png', 'label': 'Informasi kurang', 'isFromService': false},
+          {'image': 'assets/foto_laporan.png', 'label': 'Foto tidak jelas', 'isFromService': false},
+          {'image': 'assets/foto_laporan.png', 'label': 'Lokasi salah', 'isFromService': false},
+        ]);
+        break;
       case 'Approved':
       default:
-        return [
-          {'image': 'assets/foto_laporan.png', 'label': 'Saluran air bocor'},
-          {'image': 'assets/foto_laporan.png', 'label': 'Meja kantin rusak'},
-          {'image': 'assets/foto_laporan.png', 'label': 'Kaca pecah'},
-          {'image': 'assets/foto_laporan.png', 'label': 'Pintu jebol'},
-          {'image': 'assets/foto_laporan.png', 'label': 'Atap jebol'},
-          {'image': 'assets/foto_laporan.png', 'label': 'Pintu rusak'},
-          {'image': 'assets/foto_laporan.png', 'label': 'Keran rusak'},
-          {'image': 'assets/foto_laporan.png', 'label': 'Meja jebol'},
-        ];
+        items.addAll([
+          {'image': 'assets/foto_laporan.png', 'label': 'Saluran air bocor', 'isFromService': false},
+          {'image': 'assets/foto_laporan.png', 'label': 'Meja kantin rusak', 'isFromService': false},
+          {'image': 'assets/foto_laporan.png', 'label': 'Kaca pecah', 'isFromService': false},
+          {'image': 'assets/foto_laporan.png', 'label': 'Pintu jebol', 'isFromService': false},
+          {'image': 'assets/foto_laporan.png', 'label': 'Atap jebol', 'isFromService': false},
+          {'image': 'assets/foto_laporan.png', 'label': 'Pintu rusak', 'isFromService': false},
+          {'image': 'assets/foto_laporan.png', 'label': 'Keran rusak', 'isFromService': false},
+          {'image': 'assets/foto_laporan.png', 'label': 'Meja jebol', 'isFromService': false},
+        ]);
+        break;
     }
+
+    return items;
   }
 
   // Fungsi untuk mendapatkan title berdasarkan status
@@ -98,6 +148,8 @@ class _LaporanUmumDetailState extends State<LaporanUmumDetail> {
             return _buildLaporanItem(
               imagePath: laporanItems[index]['image']!,
               label: laporanItems[index]['label']!,
+              isFromService: laporanItems[index]['isFromService'] ?? false,
+              laporanData: laporanItems[index]['laporanData'],
             );
           },
         ),
@@ -105,19 +157,35 @@ class _LaporanUmumDetailState extends State<LaporanUmumDetail> {
     );
   }
 
-  Widget _buildLaporanItem({required String imagePath, required String label}) {
+  Widget _buildLaporanItem({
+    required String imagePath,
+    required String label,
+    bool isFromService = false,
+    dynamic laporanData,
+  }) {
     // Generate deskripsi berdasarkan status
     String description = '';
-    switch (widget.status) {
-      case 'Pending':
-        description = 'Laporan $label sedang dalam proses review dan akan segera ditindaklanjuti oleh tim terkait. Mohon menunggu update lebih lanjut.';
-        break;
-      case 'Rejected':
-        description = 'Laporan $label ditolak karena tidak memenuhi kriteria atau informasi yang diberikan kurang lengkap. Silakan ajukan kembali dengan data yang lebih detail.';
-        break;
-      case 'Approved':
-      default:
-        description = 'Laporan $label telah selesai diperbaiki. Fasilitas kini sudah kembali berfungsi dengan baik dan dapat digunakan sebagaimana mestinya.';
+    
+    if (isFromService && laporanData != null) {
+      // Jika dari service, gunakan data detail dari laporan yang disubmit
+      description =
+          'Masalah: ${laporanData.masalahFasilitas}\n\nLokasi: ${laporanData.lokasi}\n\nGangguan: ${laporanData.gangguanAktivitas}';
+    } else {
+      // Jika default data
+      switch (widget.status) {
+        case 'Pending':
+          description =
+              'Laporan $label sedang dalam proses review dan akan segera ditindaklanjuti oleh tim terkait. Mohon menunggu update lebih lanjut.';
+          break;
+        case 'Rejected':
+          description =
+              'Laporan $label ditolak karena tidak memenuhi kriteria atau informasi yang diberikan kurang lengkap. Silakan ajukan kembali dengan data yang lebih detail.';
+          break;
+        case 'Approved':
+        default:
+          description =
+              'Laporan $label telah selesai diperbaiki. Fasilitas kini sudah kembali berfungsi dengan baik dan dapat digunakan sebagaimana mestinya.';
+      }
     }
 
     return GestureDetector(
@@ -131,7 +199,7 @@ class _LaporanUmumDetailState extends State<LaporanUmumDetail> {
               description: description,
               image: imagePath,
               status: widget.status ?? 'Approved',
-              detailImages: [imagePath, imagePath],
+              detailImages: [imagePath],
             ),
           ),
         );
@@ -154,21 +222,14 @@ class _LaporanUmumDetailState extends State<LaporanUmumDetail> {
           children: [
             /// IMAGE
             Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
-                child: Image.asset(
-                  imagePath,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    // Jika gambar tidak ditemukan, tampilkan placeholder
-                    return Container(
-                      color: Colors.grey[200],
-                      child: Icon(Icons.image, size: 50, color: Colors.grey[400]),
-                    );
-                  },
+              child: Container(
+                color: Colors.grey[100],
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    topRight: Radius.circular(12),
+                  ),
+                  child: _buildImageWidget(imagePath),
                 ),
               ),
             ),
@@ -198,6 +259,56 @@ class _LaporanUmumDetailState extends State<LaporanUmumDetail> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Helper method to build image widget that can handle both asset and file images
+  Widget _buildImageWidget(String imagePath) {
+    print('DEBUG _buildImageWidget: Mencoba load gambar: $imagePath');
+    
+    // Check if it's a file path (contains a file separator and doesn't start with 'assets')
+    bool isFilePath = imagePath.contains('/') && !imagePath.startsWith('assets');
+    
+    print('DEBUG _buildImageWidget: isFilePath = $isFilePath');
+    
+    if (isFilePath) {
+      final file = File(imagePath);
+      print('DEBUG _buildImageWidget: File exists? ${file.existsSync()}');
+      
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            print('DEBUG _buildImageWidget: ERROR loading file image: $error');
+            return _buildErrorWidget();
+          },
+        );
+      } else {
+        print('DEBUG _buildImageWidget: File tidak ditemukan: $imagePath');
+        return _buildErrorWidget();
+      }
+    } else {
+      // Asset image
+      print('DEBUG _buildImageWidget: Loading asset image: $imagePath');
+      return Image.asset(
+        imagePath,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          print('DEBUG _buildImageWidget: ERROR loading asset image: $error');
+          return _buildErrorWidget();
+        },
+      );
+    }
+  }
+
+  // Helper method to build error widget
+  Widget _buildErrorWidget() {
+    return Container(
+      color: Colors.grey[200],
+      child: Center(
+        child: Icon(Icons.image, size: 50, color: Colors.grey[400]),
       ),
     );
   }

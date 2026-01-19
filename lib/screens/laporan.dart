@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+
 import '../widgets/custom_bottom_nav.dart';
-import 'detail_laporan.dart';
 import 'laporan_umum_detail.dart';
+import 'ide_keluhan.dart';
 import '../services/laporan_service.dart';
 
 class LaporanData {
@@ -35,11 +37,16 @@ class _LaporanPageState extends State<LaporanPage> {
 
   static const Color primaryBlue = Color(0xFF0F5E8C);
 
-  final List<String> tabs = ['Laporan Umum', 'Laporan Diterima', 'Laporan Ditolak'];
+  final List<String> tabs = [
+    'Laporan Umum',
+    'Laporan Diterima',
+    'Laporan Ditolak',
+    'Ide dan Keluhan',
+  ];
 
-  late LaporanService _laporanService;
+  late final LaporanService _laporanService;
+  late final VoidCallback _serviceListener;
 
-  // Data laporan berdasarkan status
   final Map<String, List<LaporanData>> laporanByStatus = {
     'Laporan Umum': [
       LaporanData(
@@ -52,12 +59,12 @@ class _LaporanPageState extends State<LaporanPage> {
         detailImages: ['assets/gedung.png', 'assets/gedung.png'],
       ),
       LaporanData(
-        title: 'Laporan Fasilitas Rusak',
-        subtitle: 'AC Tidak Berfungsi',
+        title: 'Laporan Sudah Diperbaiki',
+        subtitle: 'Laporan Sudah Diperbaiki',
         description:
-            'Kursi di ruang kelas B2 rusak dan memerlukan perbaikan. Masalah ini mengganggu pembelajaran siswa dan membutuhkan tindakan segera dari pihak terkait.',
+            'Fasilitas yang sebelumnya rusak dan bermasalah kini telah selesai diperbaiki dan kembali berfungsi dengan baik. Terima kasih telah melaporkan, tim maintenance telah menindaklanjuti dengan cepat.',
         image: 'assets/gedung.png',
-        status: 'Pending',
+        status: 'Approved',
         detailImages: ['assets/gedung.png', 'assets/gedung.png'],
       ),
     ],
@@ -101,12 +108,52 @@ class _LaporanPageState extends State<LaporanPage> {
         detailImages: ['assets/gedung.png', 'assets/gedung.png'],
       ),
     ],
+
+    // Kalau kamu mau benar-benar hilang, hapus item "Keluhan Umum" di bawah ini.
+    'Ide dan Keluhan': [
+      LaporanData(
+        title: 'Ide dan solusi',
+        subtitle: 'Penambahan Area Istirahat',
+        description:
+            'Saran untuk menambahkan area istirahat yang lebih nyaman di lantai 2. Dengan penambahan ini, mahasiswa dan karyawan akan memiliki tempat yang lebih baik untuk bersantai antara jam-jam kerja.',
+        image: 'assets/gedung.png',
+        status: 'None',
+        detailImages: ['assets/gedung.png', 'assets/gedung.png'],
+      ),
+      // HAPUS BLOK INI kalau kamu ingin card "Keluhan Umum" hilang:
+      // LaporanData(
+      //   title: 'Keluhan Umum',
+      //   subtitle: 'Kualitas Makanan dan Harga',
+      //   description:
+      //       'Keluhan mengenai kualitas makanan di kafeteria yang menurun dan harga yang terus meningkat. Mohon untuk melakukan evaluasi terhadap standar kualitas makanan dan pertimbangkan untuk menstabilkan harga.',
+      //   image: 'assets/gedung.png',
+      //   status: 'None',
+      //   detailImages: ['assets/gedung.png', 'assets/gedung.png'],
+      // ),
+    ],
   };
 
   @override
   void initState() {
     super.initState();
     _laporanService = LaporanService();
+
+    _serviceListener = () {
+      if (!mounted) return;
+      setState(() {});
+    };
+    _laporanService.addListener(_serviceListener);
+  }
+
+  @override
+  void dispose() {
+    _laporanService.removeListener(_serviceListener);
+    super.dispose();
+  }
+
+  bool _isIdeDanKeluhanTab(int tabIndex) {
+    if (tabIndex < 0 || tabIndex >= tabs.length) return false;
+    return tabs[tabIndex] == 'Ide dan Keluhan';
   }
 
   @override
@@ -114,7 +161,6 @@ class _LaporanPageState extends State<LaporanPage> {
     return Scaffold(
       backgroundColor: Colors.white,
 
-      /// BOTTOM NAVIGATION
       bottomNavigationBar: CustomBottomNav(
         currentIndex: _currentNavIndex,
         onTap: (index) {
@@ -132,7 +178,6 @@ class _LaporanPageState extends State<LaporanPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// TITLE
               const Padding(
                 padding: EdgeInsets.fromLTRB(20, 20, 20, 16),
                 child: Text(
@@ -145,7 +190,6 @@ class _LaporanPageState extends State<LaporanPage> {
                 ),
               ),
 
-              /// TAB NAVIGATION
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: SingleChildScrollView(
@@ -172,7 +216,6 @@ class _LaporanPageState extends State<LaporanPage> {
 
               const SizedBox(height: 24),
 
-              /// LAPORAN CARDS
               _buildLaporanContent(_currentTabIndex),
 
               const SizedBox(height: 24),
@@ -183,7 +226,6 @@ class _LaporanPageState extends State<LaporanPage> {
     );
   }
 
-  /// TAB BUTTON WIDGET
   Widget _tabButton({
     required String title,
     required bool isActive,
@@ -214,32 +256,9 @@ class _LaporanPageState extends State<LaporanPage> {
     );
   }
 
-  /// LAPORAN CONTENT
   Widget _buildLaporanContent(int tabIndex) {
-    // Dapatkan nama tab yang aktif
-    String activeTab = tabs[tabIndex];
-    
-    // Dapatkan list laporan berdasarkan tab yang aktif
-    List<LaporanData> laporanList = laporanByStatus[activeTab] ?? [];
-
-    // Untuk tab "Laporan Umum", tambahkan data laporan baru dari service
-    if (tabIndex == 0) {
-      // Konversi data dari LaporanFasilitasData ke LaporanData
-      for (var laporan in _laporanService.laporanBaru) {
-        laporanList.insert(
-          0,
-          LaporanData(
-            title: 'Laporan Fasilitas Baru',
-            subtitle: laporan.jenisFasilitas,
-            description:
-                'Masalah: ${laporan.masalahFasilitas}\n\nLokasi: ${laporan.lokasi}\n\nGangguan: ${laporan.gangguanAktivitas}',
-            image: 'assets/gedung.png',
-            status: 'Pending',
-            detailImages: ['assets/gedung.png'],
-          ),
-        );
-      }
-    }
+    final String activeTab = tabs[tabIndex];
+    final List<LaporanData> laporanList = laporanByStatus[activeTab] ?? [];
 
     if (laporanList.isEmpty) {
       return Center(
@@ -247,11 +266,7 @@ class _LaporanPageState extends State<LaporanPage> {
           padding: const EdgeInsets.symmetric(vertical: 40),
           child: Column(
             children: [
-              Icon(
-                Icons.inbox,
-                size: 64,
-                color: Colors.grey[300],
-              ),
+              Icon(Icons.inbox, size: 64, color: Colors.grey[300]),
               const SizedBox(height: 16),
               Text(
                 'Tidak ada laporan $activeTab',
@@ -277,27 +292,22 @@ class _LaporanPageState extends State<LaporanPage> {
             description: laporanList[index].description,
             imagePath: laporanList[index].image,
             status: laporanList[index].status,
-            subtitle: laporanList[index].subtitle,
-            detailImages: laporanList[index].detailImages,
           ),
         ),
       ),
     );
   }
 
-  /// LAPORAN CARD WIDGET
   Widget _laporanCard({
     required String title,
     required String description,
     required String imagePath,
     required String status,
-    String? subtitle,
-    List<String>? detailImages,
   }) {
-    // Tentukan warna badge berdasarkan status
     Color badgeColor;
     String statusText;
-    
+    bool showStatus = true;
+
     switch (status) {
       case 'Pending':
         badgeColor = Colors.orange;
@@ -310,6 +320,11 @@ class _LaporanPageState extends State<LaporanPage> {
       case 'Rejected':
         badgeColor = Colors.red;
         statusText = 'Ditolak';
+        break;
+      case 'None':
+        showStatus = false;
+        badgeColor = Colors.grey;
+        statusText = '';
         break;
       default:
         badgeColor = Colors.grey;
@@ -336,25 +351,15 @@ class _LaporanPageState extends State<LaporanPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// IMAGE
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.asset(
-                  imagePath,
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover,
-                ),
+                child: _buildCardImage(imagePath),
               ),
-
               const SizedBox(width: 16),
-
-              /// CONTENT
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    /// TITLE
                     Text(
                       title,
                       style: const TextStyle(
@@ -363,10 +368,7 @@ class _LaporanPageState extends State<LaporanPage> {
                         color: primaryBlue,
                       ),
                     ),
-
                     const SizedBox(height: 8),
-
-                    /// DESCRIPTION
                     Text(
                       description,
                       maxLines: 3,
@@ -383,55 +385,54 @@ class _LaporanPageState extends State<LaporanPage> {
               ),
             ],
           ),
-
           const SizedBox(height: 12),
-
-          /// STATUS BADGE & BUTTON
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: showStatus ? MainAxisAlignment.spaceBetween : MainAxisAlignment.end,
             children: [
-              /// STATUS BADGE
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: badgeColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: badgeColor),
-                ),
-                child: Text(
-                  statusText,
-                  style: TextStyle(
-                    color: badgeColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+              if (showStatus)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: badgeColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: badgeColor),
+                  ),
+                  child: Text(
+                    statusText,
+                    style: TextStyle(
+                      color: badgeColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
-
-              /// VIEW MORE BUTTON
               SizedBox(
                 height: 32,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => LaporanUmumDetail(status: status),
-                      ),
-                    );
+                    final bool isIdeTab = _isIdeDanKeluhanTab(_currentTabIndex);
+                    if (isIdeTab) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => KeluhanIdeSolusiViewMore(
+                            laporanService: _laporanService,
+                          ),
+                        ),
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LaporanUmumDetail(status: status),
+                        ),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryBlue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 4,
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                   ),
                   child: const Text(
                     'View More',
@@ -447,6 +448,41 @@ class _LaporanPageState extends State<LaporanPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCardImage(String imagePath) {
+    final bool isFilePath = imagePath.contains('/') && !imagePath.startsWith('assets');
+
+    if (isFilePath) {
+      final file = File(imagePath);
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          width: 100,
+          height: 100,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => _buildCardErrorWidget(),
+        );
+      }
+      return _buildCardErrorWidget();
+    }
+
+    return Image.asset(
+      imagePath,
+      width: 100,
+      height: 100,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => _buildCardErrorWidget(),
+    );
+  }
+
+  Widget _buildCardErrorWidget() {
+    return Container(
+      width: 100,
+      height: 100,
+      color: Colors.grey[200],
+      child: Icon(Icons.image, size: 40, color: Colors.grey[400]),
     );
   }
 }

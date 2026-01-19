@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'laporan_umum_detail.dart';
+import '../services/laporan_service.dart';
 
 class KeluhanUmumPage extends StatefulWidget {
   const KeluhanUmumPage({super.key});
@@ -16,7 +16,14 @@ class _KeluhanUmumPageState extends State<KeluhanUmumPage> {
   final _bagianTerkaitController = TextEditingController();
   final _lokasiController = TextEditingController();
   
+  late LaporanService _laporanService;
   bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _laporanService = LaporanService();
+  }
 
   @override
   void dispose() {
@@ -32,9 +39,18 @@ class _KeluhanUmumPageState extends State<KeluhanUmumPage> {
         _isSubmitting = true;
       });
 
-      // TODO: Implementasi submit keluhan ke server
-      Future.delayed(const Duration(seconds: 2), () {
+      // Tambahkan keluhan ke service
+      Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
+          _laporanService.tambahKeluhan(
+            KeluhanUmumData(
+              isiKeluhan: _isiKeluhanController.text,
+              bagianTerkait: _bagianTerkaitController.text,
+              lokasi: _lokasiController.text,
+              tanggalKeluhan: DateTime.now(),
+            ),
+          );
+
           setState(() {
             _isSubmitting = false;
           });
@@ -42,6 +58,11 @@ class _KeluhanUmumPageState extends State<KeluhanUmumPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Keluhan berhasil dikirim')),
           );
+          
+          // Clear form
+          _isiKeluhanController.clear();
+          _bagianTerkaitController.clear();
+          _lokasiController.clear();
           
           // Kembali ke halaman sebelumnya
           Navigator.pop(context);
@@ -187,37 +208,6 @@ class _KeluhanUmumPageState extends State<KeluhanUmumPage> {
                     }
                     return null;
                   },
-                ),
-                const SizedBox(height: 16),
-
-                // View More Button
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LaporanUmumDetail(),
-                        ),
-                      );
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.blue),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                    ),
-                    child: const Text(
-                      'Lihat Laporan',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
                 ),
                 const SizedBox(height: 16),
 

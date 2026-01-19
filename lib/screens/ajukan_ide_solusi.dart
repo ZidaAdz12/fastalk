@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/laporan_service.dart';
+import 'ide_solusi_detail.dart';
 
 class AjukanIdeSolusiPage extends StatefulWidget {
   const AjukanIdeSolusiPage({super.key});
@@ -16,7 +18,14 @@ class _AjukanIdeSolusiPageState extends State<AjukanIdeSolusiPage> {
   final _areaPenerapanController = TextEditingController();
   final _pihakTerbantuController = TextEditingController();
   
+  late LaporanService _laporanService;
   bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _laporanService = LaporanService();
+  }
 
   @override
   void dispose() {
@@ -33,9 +42,19 @@ class _AjukanIdeSolusiPageState extends State<AjukanIdeSolusiPage> {
         _isSubmitting = true;
       });
 
-      // TODO: Implementasi submit ide/solusi ke server
-      Future.delayed(const Duration(seconds: 2), () {
+      // Tambahkan ide/solusi ke service
+      Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
+          _laporanService.tambahIdeSolusi(
+            IdeSolusiData(
+              ideSolusi: _ideSolusiController.text,
+              alasanKepentingan: _alasanKepentinganController.text,
+              areaPenerapan: _areaPenerapanController.text,
+              pihakTerbantu: _pihakTerbantuController.text,
+              tanggalIde: DateTime.now(),
+            ),
+          );
+
           setState(() {
             _isSubmitting = false;
           });
@@ -43,6 +62,12 @@ class _AjukanIdeSolusiPageState extends State<AjukanIdeSolusiPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Ide/Solusi berhasil dikirim')),
           );
+          
+          // Clear form
+          _ideSolusiController.clear();
+          _alasanKepentinganController.clear();
+          _areaPenerapanController.clear();
+          _pihakTerbantuController.clear();
           
           // Kembali ke halaman sebelumnya
           Navigator.pop(context);

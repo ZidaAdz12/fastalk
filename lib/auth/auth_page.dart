@@ -12,7 +12,6 @@ class AuthPage extends StatelessWidget {
           children: [
             const Spacer(),
 
-            /// LOGO FASTALK
             Image.asset(
               'assets/fastalk.png',
               width: 220,
@@ -21,7 +20,6 @@ class AuthPage extends StatelessWidget {
 
             const Spacer(),
 
-            /// SIGN IN BUTTON
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: SizedBox(
@@ -29,7 +27,7 @@ class AuthPage extends StatelessWidget {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: Navigate to Sign In Page
+                    Navigator.pushNamed(context, '/signin');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0F5E8C),
@@ -51,7 +49,6 @@ class AuthPage extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            /// OR TEXT
             const Text(
               'Or',
               style: TextStyle(
@@ -62,7 +59,6 @@ class AuthPage extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            /// SIGN UP BUTTON
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: SizedBox(
@@ -70,7 +66,7 @@ class AuthPage extends StatelessWidget {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: Navigate to Sign Up Page
+                    Navigator.pushNamed(context, '/signup');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0F5E8C),

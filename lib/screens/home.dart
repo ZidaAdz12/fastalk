@@ -53,7 +53,7 @@ class _HomePageState extends State<HomePage> {
               const Padding(
                 padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
                 child: Text(
-                  'Halo bogor gantenk..',
+                  'Welcome To Fastalk!!!',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,

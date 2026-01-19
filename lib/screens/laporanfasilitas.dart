@@ -86,6 +86,12 @@ class _LaporanFasilitasPageState extends State<LaporanFasilitasPage> {
           );
 
           laporanService.tambahLaporan(novaLaporan);
+          
+          // Debug logging
+          print('DEBUG: Laporan tersimpan!');
+          print('DEBUG: Total laporan sekarang: ${laporanService.laporanBaru.length}');
+          print('DEBUG: Jenis Fasilitas: ${novaLaporan.jenisFasilitas}');
+          print('DEBUG: Foto Path: ${novaLaporan.fotoPath}');
 
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Laporan fasilitas berhasil dikirim')),

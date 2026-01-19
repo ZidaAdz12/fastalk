@@ -98,7 +98,10 @@ class SignUpPage extends StatelessWidget {
                         width: double.infinity,
                         height: 50,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            // Langsung masuk ke Home, dan menghapus halaman SignUp dari stack
+                            Navigator.pushReplacementNamed(context, '/home');
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF9BD3F5),
                             shape: RoundedRectangleBorder(
@@ -156,7 +159,9 @@ class SignUpPage extends StatelessWidget {
                       /// GOOGLE SIGN UP
                       Center(
                         child: GestureDetector(
-                          onTap: () {},
+                          onTap: () {
+                            // Kalau nanti kamu implement login Google, navigasinya juga bisa diarahkan ke /home setelah sukses.
+                          },
                           child: Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(

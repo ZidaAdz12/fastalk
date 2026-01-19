@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import '../auth/signin.dart';
-import '../auth/signup.dart';
-import '../screens/home.dart';
-import '../screens/laporanfasilitas.dart';
-import '../screens/keluhanumum.dart';
-import '../screens/ajukan_ide_solusi.dart';                           
+
+import 'auth/auth_page.dart';
+import 'auth/signin.dart';
+import 'auth/signup.dart';
+import 'auth/splashscreen.dart';
+import 'screens/home.dart';
+import 'screens/laporanfasilitas.dart';
+import 'screens/keluhanumum.dart';
+import 'screens/ajukan_ide_solusi.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const FastalkApp());
 }
 
@@ -20,7 +24,9 @@ class FastalkApp extends StatelessWidget {
       title: 'Fastalk',
       initialRoute: '/',
       routes: {
-        '/': (context) => const SignInPage(),
+        '/': (context) => const SplashScreen(),
+        '/auth': (context) => const AuthPage(),
+        '/signin': (context) => const SignInPage(),
         '/signup': (context) => const SignUpPage(),
         '/home': (context) => const HomePage(),
         '/laporanfasilitas': (context) => const LaporanFasilitasPage(),

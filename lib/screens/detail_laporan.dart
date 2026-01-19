@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 class DetailLaporanPage extends StatefulWidget {
   final String title;
@@ -24,6 +25,54 @@ class DetailLaporanPage extends StatefulWidget {
 
 class _DetailLaporanPageState extends State<DetailLaporanPage> {
   static const Color primaryBlue = Color(0xFF0F5E8C);
+
+  // Helper method to build image widget that can handle both asset and file images
+  Widget _buildImage(String imagePath, {double width = 160, double height = 160}) {
+    // Check if it's a file path (contains a file separator)
+    bool isFilePath = imagePath.contains('/') && !imagePath.startsWith('assets');
+    
+    if (isFilePath) {
+      final file = File(imagePath);
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildErrorWidget(width, height);
+          },
+        );
+      } else {
+        return _buildErrorWidget(width, height);
+      }
+    } else {
+      // Asset image
+      return Image.asset(
+        imagePath,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildErrorWidget(width, height);
+        },
+      );
+    }
+  }
+
+  // Helper method to build error widget
+  Widget _buildErrorWidget(double width, double height) {
+    return Container(
+      width: width,
+      height: height,
+      color: Colors.grey[200],
+      child: Icon(
+        Icons.image_not_supported,
+        color: Colors.grey[400],
+        size: 40,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -127,11 +176,10 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
                         padding: const EdgeInsets.only(right: 12),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
+                          child: _buildImage(
                             widget.detailImages[index],
                             width: 160,
                             height: 160,
-                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
